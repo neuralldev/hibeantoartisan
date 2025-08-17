@@ -616,12 +616,12 @@ class HibeanToArtisanConverter:
             # Écrire le fichier de sortie sans la clé racine "alog"
             with open(self.output_file, 'w') as f:
                 json.dump(alog_data, f, indent=4)
-            print(f"Conversion réussie ! Le fichier a été enregistré sous {self.output_file}")
+            print(f"File converted and stored as {self.output_file}")
         
         except FileNotFoundError:
-            print(f"Erreur : le fichier source '{self.input_file}' n'a pas été trouvé.")
+            print(f"Error : source file '{self.input_file}' not found.")
         except Exception as e:
-            print(f"Erreur lors du traitement du fichier '{self.input_file}': {e}")
+            print(f"Error while procesisng file '{self.input_file}': {e}")
             print(traceback.format_exc())
 
     def _update_crack_info(self, alog_data, event_list, event_id, temp_key, time_key):
@@ -634,22 +634,23 @@ class HibeanToArtisanConverter:
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python nom_du_script.py <modele_de_fichiers>")
-        print("Exemple: python nom_du_script.py \"*.json\"")
+        print("Example: python nom_du_script.py \"*.json\"")
         sys.exit(1)
 
     file_pattern = sys.argv[1]
     input_files_paths = glob.glob(file_pattern)
-    print(f"Fichiers à traiter : {input_files_paths}")
+    print(f"Processing of {input_files_paths}")
 
     if not input_files_paths:
-        print(f"Aucun fichier trouvé pour le modèle '{file_pattern}'.")
+        print(f"No file foundfor the wilcard path '{file_pattern}'.")
     else:
+        print(f"start conversion")
         for input_file_path in input_files_paths:
             base_name = os.path.basename(input_file_path)
             directory = os.path.dirname(input_file_path)
             output_file_path = f"{directory}/art_{base_name}"
-            print(f"traitement de {base_name}")
+            print(f"processing {base_name}")
             converter = HibeanToArtisanConverter(input_file_path, output_file_path)
             converter.convert()
-            print(f"loop")
-        print(f" end of process")
+#            print(f"loop")
+        print(f"end of conversion")
