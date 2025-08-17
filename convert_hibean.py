@@ -1,4 +1,3 @@
-
 import json
 import os
 from datetime import datetime
@@ -7,10 +6,52 @@ import sys
 import glob
 import traceback
         
+# Dictionnaires de chaînes de caractères pour chaque langue
+fr_strings = {
+    "usage_message": "Utilisation : python nom_du_script.py <modele_de_fichiers> <langue=[en,fr]>",
+    "example_message": "Exemple : python nom_du_script.py \"*.json\"",
+    "processing_message": "Traitement de {}",
+    "file_not_found_error": "Erreur : le fichier source '{}' n'a pas été trouvé.",
+    "processing_error": "Erreur lors du traitement du fichier '{}': {}",
+    "conversion_started": "Début de la conversion",
+    "conversion_ended": "Fin de la conversion",
+    "no_file_found": "Aucun fichier trouvé pour le chemin de caractère générique '{}'.",
+    "missing_sections_error": "Sections manquantes dans le fichier d'entrée",
+    "file_converted": "Fichier converti et stocké sous '{}'",
+    "language_selection": "Avertissement : Langue '{}' non reconnue. Utilisation de la langue par défaut '{}'."
+}
+
+en_strings = {
+    "usage_message": "Usage: python script_name.py <file_pattern>  <language=[en,fr]",
+    "example_message": "Example: python script_name.py \"*.json\"",
+    "processing_message": "Processing {}",
+    "file_not_found_error": "Error: source file '{}' not found.",
+    "processing_error": "Error while processing file '{}': {}",
+    "conversion_started": "Conversion started",
+    "conversion_ended": "Conversion ended",
+    "no_file_found": "No file found for the wildcard path '{}'.",
+    "missing_sections_error": "Missing sections in input file",
+    "file_converted": "File convverted and stored as '{}'",
+    "language_selection": "Avertissement : Language '{}' not found. backinjg up to default as '{}'."
+}
+
+LOCALES = {
+    "fr": fr_strings,
+    "en": en_strings
+}
+
+# Sélection de la langue active
+CURRENT_LANG = "fr"  
+
+def get_string(key, lang=CURRENT_LANG):
+    """
+    Récupère la chaîne de caractères localisée.
+    """
+    return LOCALES.get(lang, LOCALES["en"]).get(key, key)
+
 class AlogStructure:
     def __init__(self):
         super().__init__()
-        # Modification : Utiliser un dictionnaire au lieu d'une liste de listes
         self.alog = {
             "recording_version": "3.2.1",
             "#recording_revision=": "",
@@ -82,7 +123,7 @@ class AlogStructure:
             "cuppingnotes":"",
             "timex":[], # import from dataList[duration] for each record
             "temp1":[], # import from dataList[et] for each record
-            "temp2":[], # import from dataList[Bt] for each record
+            "temp2":[], # import from dataList[bt] for each record
             "phases":[0,150,185,230], # import from phaseList[duration] where phaseList[phase] = 2 to second value,  where phaseList[phase] = 3 in third value, where phaseList[phase] = 4 to 4th value
             "zmax":0, # import max value from dataList records from "ror" field, round value to next upper multiple of 5
             "zmin":0,
@@ -400,7 +441,7 @@ class HibeanToArtisanConverter:
             phase_list = hibean_data.get("phaseList", [])
     
             if roast_context is None or device_info is None or data_list is None or event_list is None or phase_list is None:
-                print("missing sections in input file")
+                print(get_string("missing_sections_error"))
                 return
             date_time_str = hibean_data.get("dateTime", "")
             if date_time_str:
@@ -616,12 +657,12 @@ class HibeanToArtisanConverter:
             # Écrire le fichier de sortie sans la clé racine "alog"
             with open(self.output_file, 'w') as f:
                 json.dump(alog_data, f, indent=4)
-            print(f"File converted and stored as {self.output_file}")
+            print(get_string("file_converted").format(self.output_file)) # type: ignore
         
         except FileNotFoundError:
-            print(f"Error : source file '{self.input_file}' not found.")
+            print(get_string("file_not_found_error").format(self.input_file)) # type: ignore
         except Exception as e:
-            print(f"Error while procesisng file '{self.input_file}': {e}")
+            print(get_string("processing_error").format(self.input_file, e)) # type: ignore
             print(traceback.format_exc())
 
     def _update_crack_info(self, alog_data, event_list, event_id, temp_key, time_key):
@@ -633,24 +674,29 @@ class HibeanToArtisanConverter:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python nom_du_script.py <modele_de_fichiers>")
-        print("Example: python nom_du_script.py \"*.json\"")
+        print(get_string("usage_message"))
+        print(get_string("example_message"))
         sys.exit(1)
 
+        if sys.argv[2].lower() in ["fr", "en"]:
+            CURRENT_LANG = sys.argv[2].lower()
+        else:
+            print(get_string("language_selection").format(sys.argv[2], CURRENT_LANG)) # type: ignore
+ 
     file_pattern = sys.argv[1]
     input_files_paths = glob.glob(file_pattern)
-    print(f"Processing of {input_files_paths}")
+    print(get_string("processing_message").format(input_files_paths)) # type: ignore
 
     if not input_files_paths:
-        print(f"No file foundfor the wilcard path '{file_pattern}'.")
+        print(get_string("no_file_found").format(file_pattern)) # type: ignore
     else:
-        print(f"start conversion")
+        print(get_string("conversion_started"))
         for input_file_path in input_files_paths:
             base_name = os.path.basename(input_file_path)
             directory = os.path.dirname(input_file_path)
             output_file_path = f"{directory}/art_{base_name}"
-            print(f"processing {base_name}")
+            print(get_string("processing_message").format(base_name)) # type: ignore
             converter = HibeanToArtisanConverter(input_file_path, output_file_path)
             converter.convert()
-#            print(f"loop")
-        print(f"end of conversion")
+        print(get_string("conversion_ended"))
+    
