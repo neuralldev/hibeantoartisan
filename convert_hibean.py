@@ -470,8 +470,8 @@ class HibeanToArtisanConverter:
             alog_data["weight"][0] = roast_context.get("greenBeanWeight", {}).get("value", 0.0) if roast_context.get("greenBeanWeight") is not None else 0.0
             alog_data["weight"][1] = roast_context.get("roastedBeanWeight", {}).get("value", 0.0) if roast_context.get("roastedBeanWeight") is not None else 0.0
             alog_data["ambientTemp"] = roast_context.get("envTemp", {}).get("value", 0.0) if roast_context.get("ambientTemp") is not None else 0.0
-            alog_data["ambient_humidity"] = roast_context.get("envHumidity", 0)
-            alog_data["ambient_pressure"] = roast_context.get("pressure", 0)
+            alog_data["ambient_humidity"] = roast_context.get("envHumidity", 0) if roast_context.get("envHumidity") is not None else 0
+            alog_data["ambient_pressure"] = roast_context.get("pressure", 0) if roast_context.get("pressure") is not None else 0
 
             # Remplissage de timeindex avec les index correspondants
             hibean_time_indices = [0,0,0,0,0,0,0,0,0]
