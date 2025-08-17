@@ -594,6 +594,8 @@ class HibeanToArtisanConverter:
                 computed["DROP_BT"] = round(drop_event.get("temperature", 0.0), 1)
 
             computed["totaltime"] = round(hibean_data.get("roastContext", {}).get("duration", 0.0), 1) if roast_context.get("duration") is not None else 0.0
+            computed["ambient_temperature"] = round(roast_context.get("envTemp", {}).get("value", 0.0), 1) if roast_context.get("envTemp") is not None else 0.0
+#            computed["ambient_humidity"] = round(roast_context.get("envHumidity", 0.0), 1) if roast_context.get("envHumidity") is not None else 0.0
 
             phases_map = {1: "dryphasetime", 2: "midphasetime", 3: "finishphasetime"}
             for phase_point in phase_list:
