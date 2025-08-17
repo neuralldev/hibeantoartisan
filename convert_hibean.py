@@ -646,7 +646,8 @@ if __name__ == "__main__":
     else:
         for input_file_path in input_files_paths:
             base_name = os.path.basename(input_file_path)
-            output_file_path = f"art_{base_name}"
+            directory = os.path.dirname(input_file_path)
+            output_file_path = f"{directory}/art_{base_name}"
             print(f"traitement de {base_name}")
             converter = HibeanToArtisanConverter(input_file_path, output_file_path)
             converter.convert()
